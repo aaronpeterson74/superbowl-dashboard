@@ -477,7 +477,7 @@
             opacity: 0;
             pointer-events: none;
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 9999;
         }
 
         .prize-card:hover .prize-tooltip {
@@ -618,6 +618,30 @@
             background: linear-gradient(90deg, var(--patriots-red), var(--seahawks-blue));
             transition: width 0.5s ease;
             border-radius: 4px;
+        }
+
+        .trend-fill.seahawks {
+            background: linear-gradient(90deg, var(--seahawks-green), var(--seahawks-blue));
+        }
+
+        .trend-fill.patriots {
+            background: linear-gradient(90deg, var(--patriots-red), #8B1538);
+        }
+
+        .trend-fill.over {
+            background: linear-gradient(90deg, var(--patriots-red), #FF6B6B);
+        }
+
+        .trend-fill.under {
+            background: linear-gradient(90deg, var(--seahawks-blue), #4A90E2);
+        }
+
+        .trend-fill.yes {
+            background: linear-gradient(90deg, var(--seahawks-green), #7FD66E);
+        }
+
+        .trend-fill.no {
+            background: linear-gradient(90deg, var(--patriots-red), #E85D75);
         }
 
         .chat-container {
@@ -816,10 +840,10 @@
         }
 
         .question-tooltip {
-            position: absolute;
-            bottom: 100%;
+            position: fixed;
+            bottom: auto;
             left: 50%;
-            transform: translateX(-50%) translateY(-5px);
+            transform: translateX(-50%) translateY(-10px);
             background: var(--bg-card);
             border: 2px solid var(--seahawks-green);
             border-radius: 8px;
@@ -830,14 +854,14 @@
             opacity: 0;
             pointer-events: none;
             transition: all 0.2s ease;
-            z-index: 1000;
+            z-index: 9999;
             white-space: normal;
             text-align: left;
         }
 
         .question-cell:hover .question-tooltip {
             opacity: 1;
-            transform: translateX(-50%) translateY(-10px);
+            transform: translateX(-50%) translateY(-15px);
         }
 
         .question-tooltip::after {
@@ -1016,19 +1040,20 @@
                 
                 try {
                     const chatUrl = CONFIG.CHAT_SHEET_URL || CONFIG.SHEET_API_URL;
-                    await fetch(chatUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            type: 'chat',
-                            name: chatName.trim(),
-                            message: chatMessage.trim(),
-                        }),
-                    });
-                    setChatMessage('');
-                    fetchChat();
+                    // Use GET with parameters for better Apps Script compatibility
+                    const url = `${chatUrl}?action=addChat&name=${encodeURIComponent(chatName.trim())}&message=${encodeURIComponent(chatMessage.trim())}`;
+                    
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        setChatMessage('');
+                        // Fetch updated messages immediately
+                        setTimeout(fetchChat, 500);
+                    }
                 } catch (err) {
                     console.error('Error sending message:', err);
+                    alert('Failed to send message. Please check your connection and make sure the Apps Script is properly deployed.');
                 }
             };
 
@@ -1139,6 +1164,38 @@
                 return data.fullResults.filter(p => 
                     p.name.toLowerCase().includes(term)
                 ).slice(0, 5); // Show top 5 matches
+            };
+
+            // Determine trend bar color based on option text
+            const getTrendBarClass = (optionName) => {
+                const name = optionName.toLowerCase();
+                
+                // Check for team names
+                if (name.includes('seahawk') || name.includes('seattle')) {
+                    return 'seahawks';
+                }
+                if (name.includes('patriot') || name.includes('new england')) {
+                    return 'patriots';
+                }
+                
+                // Check for over/under
+                if (name.includes('over')) {
+                    return 'over';
+                }
+                if (name.includes('under')) {
+                    return 'under';
+                }
+                
+                // Check for yes/no
+                if (name === 'yes') {
+                    return 'yes';
+                }
+                if (name === 'no') {
+                    return 'no';
+                }
+                
+                // Default gradient
+                return '';
             };
 
             if (loading) {
@@ -1296,7 +1353,7 @@
                                             </div>
                                             <div className="trend-bar">
                                                 <div 
-                                                    className="trend-fill" 
+                                                    className={`trend-fill ${getTrendBarClass(option.name)}`}
                                                     style={{width: `${option.percent}%`}}
                                                 ></div>
                                             </div>
