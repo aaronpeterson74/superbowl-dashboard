@@ -93,11 +93,6 @@
             font-size: clamp(2rem, 5vw, 4rem);
             letter-spacing: 3px;
             margin-bottom: 10px;
-            background: linear-gradient(45deg, var(--patriots-red), var(--patriots-silver), var(--seahawks-blue), var(--seahawks-green));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
             position: relative;
             z-index: 1;
             display: flex;
@@ -105,6 +100,30 @@
             justify-content: center;
             gap: 20px;
             flex-wrap: wrap;
+        }
+
+        .header-title-text {
+            display: inline-block;
+        }
+
+        .header-title-text .word-1 {
+            color: var(--patriots-red);
+        }
+
+        .header-title-text .word-2 {
+            color: var(--text-primary);
+        }
+
+        .header-title-text .word-3 {
+            color: var(--seahawks-blue);
+        }
+
+        .header-title-text .word-4 {
+            color: var(--seahawks-green);
+        }
+
+        .header-title-text .word-5 {
+            color: var(--patriots-silver);
         }
 
         .team-logo {
@@ -128,8 +147,118 @@
             50% { transform: translateY(-10px); }
         }
 
-        .header-title-text {
-            display: inline-block;
+        .search-pin-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Roboto Condensed', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--seahawks-green);
+            box-shadow: 0 0 15px rgba(105, 190, 40, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .pinned-players {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .pinned-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .pinned-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(105, 190, 40, 0.15);
+            border: 1px solid var(--seahawks-green);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .pinned-tag-icon {
+            color: var(--seahawks-green);
+            font-size: 0.9rem;
+        }
+
+        .pinned-tag-remove {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1;
+            transition: color 0.2s ease;
+            padding: 0 0 0 5px;
+        }
+
+        .pinned-tag-remove:hover {
+            color: var(--patriots-red);
+        }
+
+        .pinned-row {
+            background: rgba(105, 190, 40, 0.08) !important;
+            border-left: 3px solid var(--seahawks-green) !important;
+        }
+
+        .pinned-row td:first-child::before {
+            content: '📌 ';
+            margin-right: 5px;
+        }
+
+        .clear-pins-btn {
+            padding: 8px 15px;
+            background: rgba(198, 12, 48, 0.2);
+            border: 1px solid var(--patriots-red);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .clear-pins-btn:hover {
+            background: rgba(198, 12, 48, 0.4);
+            transform: translateY(-2px);
         }
 
         .header .subtitle {
@@ -825,14 +954,14 @@
         // ============================================
         const CONFIG = {
             // Replace with your Google Apps Script Web App URL
-            SHEET_API_URL: 'https://script.google.com/macros/s/AKfycbzDoPq8f4lX7riZIeep98lY6X67MdtDKBSZb1vsON8CBDuAg8AwXXmXM9Jf-UUvApBy/exec',
+            SHEET_API_URL: 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE',
             
             // Refresh interval in milliseconds (5 seconds)
             REFRESH_INTERVAL: 5000,
             
             // Chat configuration
             CHAT_ENABLED: true,
-            CHAT_SHEET_URL: 'https://script.google.com/macros/s/AKfycbzDoPq8f4lX7riZIeep98lY6X67MdtDKBSZb1vsON8CBDuAg8AwXXmXM9Jf-UUvApBy/exec', // Optional: separate chat endpoint
+            CHAT_SHEET_URL: 'YOUR_CHAT_GOOGLE_APPS_SCRIPT_URL_HERE', // Optional: separate chat endpoint
         };
         // ============================================
 
@@ -846,6 +975,8 @@
             const [chatName, setChatName] = useState('');
             const [chatMessage, setChatMessage] = useState('');
             const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+            const [searchTerm, setSearchTerm] = useState('');
+            const [pinnedPlayers, setPinnedPlayers] = useState([]);
             const chatMessagesRef = useRef(null);
 
             // Fetch data from Google Sheets
@@ -958,6 +1089,58 @@
                 return sortConfig.direction === 'asc' ? 'sorted-asc' : 'sorted-desc';
             };
 
+            // Pin/unpin player functions
+            const pinPlayer = (playerName) => {
+                if (!pinnedPlayers.includes(playerName)) {
+                    setPinnedPlayers([...pinnedPlayers, playerName]);
+                }
+                setSearchTerm(''); // Clear search after pinning
+            };
+
+            const unpinPlayer = (playerName) => {
+                setPinnedPlayers(pinnedPlayers.filter(name => name !== playerName));
+            };
+
+            const clearAllPins = () => {
+                setPinnedPlayers([]);
+            };
+
+            // Get sorted and filtered results with pinned players at top
+            const getDisplayedResults = () => {
+                if (!data?.fullResults) return [];
+                
+                let sorted = [...data.fullResults];
+                
+                // Apply sorting
+                if (sortConfig.key === 'name') {
+                    sorted.sort((a, b) => {
+                        const comparison = a.name.localeCompare(b.name);
+                        return sortConfig.direction === 'asc' ? comparison : -comparison;
+                    });
+                } else if (sortConfig.key === 'points') {
+                    sorted.sort((a, b) => {
+                        const comparison = (b.points || 0) - (a.points || 0);
+                        return sortConfig.direction === 'asc' ? -comparison : comparison;
+                    });
+                }
+                
+                // Separate pinned and unpinned
+                const pinned = sorted.filter(p => pinnedPlayers.includes(p.name));
+                const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.name));
+                
+                // Pinned players always at top, then rest
+                return [...pinned, ...unpinned];
+            };
+
+            // Search for player and highlight/suggest pinning
+            const getSearchResults = () => {
+                if (!searchTerm || !data?.fullResults) return [];
+                const term = searchTerm.toLowerCase();
+                return data.fullResults.filter(p => 
+                    p.name.toLowerCase().includes(term)
+                ).slice(0, 5); // Show top 5 matches
+            };
+
             if (loading) {
                 return (
                     <div className="container">
@@ -985,14 +1168,20 @@
                     <div className="header">
                         <h1>
                             <img 
-                                src="https://upload.wikimedia.org/wikipedia/en/8/8e/New_England_Patriots_logo.svg" 
+                                src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ne.png" 
                                 alt="Patriots Logo" 
                                 className="team-logo patriots"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
-                            <span className="header-title-text">{data.title || '2026 Super Bowl LX Prop Bets'}</span>
+                            <span className="header-title-text">
+                                <span className="word-1">2026 </span>
+                                <span className="word-2">Super Bowl </span>
+                                <span className="word-3">LX </span>
+                                <span className="word-4">Prop </span>
+                                <span className="word-5">Bets</span>
+                            </span>
                             <img 
-                                src="https://upload.wikimedia.org/wikipedia/en/8/8e/Seattle_Seahawks_logo.svg" 
+                                src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sea.png" 
                                 alt="Seahawks Logo" 
                                 className="team-logo seahawks"
                                 onError={(e) => e.target.style.display = 'none'}
@@ -1121,6 +1310,79 @@
                     {activeTab === 'results' && (
                         <div className="leaderboard">
                             <h2 style={{marginBottom: '20px', fontFamily: 'Oswald'}}>Full Results by Player</h2>
+                            
+                            <div className="search-pin-container">
+                                <div className="search-box">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        className="search-input"
+                                        placeholder="Search for a player to pin..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    {searchTerm && getSearchResults().length > 0 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: 0,
+                                            right: 0,
+                                            background: 'var(--bg-card)',
+                                            border: '1px solid var(--seahawks-green)',
+                                            borderRadius: '10px',
+                                            marginTop: '5px',
+                                            zIndex: 1000,
+                                            maxHeight: '200px',
+                                            overflowY: 'auto'
+                                        }}>
+                                            {getSearchResults().map((player, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    onClick={() => pinPlayer(player.name)}
+                                                    style={{
+                                                        padding: '10px 15px',
+                                                        cursor: 'pointer',
+                                                        borderBottom: idx < getSearchResults().length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                                        transition: 'background 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(105, 190, 40, 0.1)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    <strong>{player.name}</strong> - {player.points} points
+                                                    {!pinnedPlayers.includes(player.name) && (
+                                                        <span style={{float: 'right', color: 'var(--seahawks-green)'}}>📌 Click to pin</span>
+                                                    )}
+                                                    {pinnedPlayers.includes(player.name) && (
+                                                        <span style={{float: 'right', color: 'var(--text-secondary)'}}>✓ Pinned</span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {pinnedPlayers.length > 0 && (
+                                    <div className="pinned-players">
+                                        <span className="pinned-label">Pinned:</span>
+                                        {pinnedPlayers.map((name, idx) => (
+                                            <div key={idx} className="pinned-tag">
+                                                <span className="pinned-tag-icon">📌</span>
+                                                <span>{name}</span>
+                                                <span 
+                                                    className="pinned-tag-remove"
+                                                    onClick={() => unpinPlayer(name)}
+                                                >
+                                                    ×
+                                                </span>
+                                            </div>
+                                        ))}
+                                        <button className="clear-pins-btn" onClick={clearAllPins}>
+                                            Clear All
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            
                             <div className="full-results-table">
                                 <table className="results-table">
                                     <thead>
@@ -1138,12 +1400,15 @@
                                                 Points
                                             </th>
                                             {data.questions?.map((question, idx) => (
-                                                <th key={idx}>
-                                                    <div className="question-cell">
+                                                <th key={idx} style={{position: 'relative'}}>
+                                                    <span 
+                                                        className="question-cell"
+                                                        style={{display: 'inline-block', cursor: 'help'}}
+                                                    >
                                                         {idx + 1}
-                                                        <div className="question-tooltip">
+                                                        <span className="question-tooltip">
                                                             <div className="question-tooltip-title">{question}</div>
-                                                            {data.results && data.results[idx] ? (
+                                                            {data.results && data.results[idx] && data.results[idx] !== '' ? (
                                                                 <div className="question-tooltip-result">
                                                                     <div className="question-tooltip-result-label">Result:</div>
                                                                     <div>{data.results[idx]}</div>
@@ -1153,15 +1418,18 @@
                                                                     Pending...
                                                                 </div>
                                                             )}
-                                                        </div>
-                                                    </div>
+                                                        </span>
+                                                    </span>
                                                 </th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {getSortedResults().map((player, idx) => (
-                                            <tr key={idx}>
+                                        {getDisplayedResults().map((player, idx) => (
+                                            <tr 
+                                                key={idx}
+                                                className={pinnedPlayers.includes(player.name) ? 'pinned-row' : ''}
+                                            >
                                                 <td style={{fontWeight: 600}}>{player.name}</td>
                                                 <td style={{fontWeight: 700, color: 'var(--accent-glow)'}}>{player.points}</td>
                                                 {player.picks?.map((pick, pickIdx) => (
