@@ -65,11 +65,12 @@
             text-align: center;
             padding: 30px 20px;
             margin-bottom: 30px;
-            background: linear-gradient(135deg, rgba(198, 12, 48, 0.1) 0%, rgba(0, 34, 68, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(198, 12, 48, 0.3) 0%, rgba(0, 34, 68, 0.3) 100%);
             border-radius: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.25);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            z-index: 1;
         }
 
         .header::before {
@@ -1456,29 +1457,37 @@
                                             >
                                                 Points
                                             </th>
-                                            {data.questions?.map((question, idx) => (
-                                                <th key={idx} style={{position: 'relative'}}>
-                                                    <span 
-                                                        className="question-cell"
-                                                        style={{display: 'inline-block', cursor: 'help'}}
-                                                    >
-                                                        {idx + 1}
-                                                        <span className="question-tooltip">
-                                                            <div className="question-tooltip-title">{question}</div>
-                                                            {data.results && data.results[idx] && data.results[idx] !== '' ? (
-                                                                <div className="question-tooltip-result">
-                                                                    <div className="question-tooltip-result-label">Result:</div>
-                                                                    <div>{data.results[idx]}</div>
+                                            {data.questions?.map((question, idx) => {
+                                                // Skip empty questions
+                                                if (!question || question === '') return null;
+                                                
+                                                return (
+                                                    <th key={idx} style={{position: 'relative'}}>
+                                                        <span 
+                                                            className="question-cell"
+                                                            style={{display: 'inline-block', cursor: 'help'}}
+                                                            title={question}
+                                                        >
+                                                            {idx + 1}
+                                                            <span className="question-tooltip">
+                                                                <div className="question-tooltip-title">
+                                                                    {question}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="question-tooltip-pending">
-                                                                    Pending...
-                                                                </div>
-                                                            )}
+                                                                {data.results && data.results[idx] && data.results[idx] !== '' ? (
+                                                                    <div className="question-tooltip-result">
+                                                                        <div className="question-tooltip-result-label">Result:</div>
+                                                                        <div>{data.results[idx]}</div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="question-tooltip-pending">
+                                                                        Pending...
+                                                                    </div>
+                                                                )}
+                                                            </span>
                                                         </span>
-                                                    </span>
-                                                </th>
-                                            ))}
+                                                    </th>
+                                                );
+                                            })}
                                         </tr>
                                     </thead>
                                     <tbody>
