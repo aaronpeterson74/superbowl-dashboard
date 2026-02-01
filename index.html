@@ -350,6 +350,54 @@
             font-style: italic;
         }
 
+        .question-filter-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-button {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--seahawks-green);
+            color: var(--text-primary);
+        }
+
+        .filter-button.active {
+            background: var(--seahawks-green);
+            border-color: var(--seahawks-green);
+            color: white;
+            box-shadow: 0 2px 10px rgba(105, 190, 40, 0.3);
+        }
+
+        .filter-count {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .filter-button.active .filter-count {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
         .header .subtitle {
             font-family: 'Oswald', sans-serif;
             font-size: clamp(1rem, 2.5vw, 1.5rem);
@@ -1091,14 +1139,14 @@
         // ============================================
         const CONFIG = {
             // Replace with your Google Apps Script Web App URL
-            SHEET_API_URL: 'https://script.google.com/macros/s/AKfycbzDoPq8f4lX7riZIeep98lY6X67MdtDKBSZb1vsON8CBDuAg8AwXXmXM9Jf-UUvApBy/exec',
+            SHEET_API_URL: 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE',
             
             // Refresh interval in milliseconds (5 seconds)
             REFRESH_INTERVAL: 5000,
             
             // Chat configuration
             CHAT_ENABLED: true,
-            CHAT_SHEET_URL: 'https://script.google.com/macros/s/AKfycbzDoPq8f4lX7riZIeep98lY6X67MdtDKBSZb1vsON8CBDuAg8AwXXmXM9Jf-UUvApBy/exec', // Optional: separate chat endpoint
+            CHAT_SHEET_URL: 'YOUR_CHAT_GOOGLE_APPS_SCRIPT_URL_HERE', // Optional: separate chat endpoint
         };
         // ============================================
 
@@ -1116,6 +1164,7 @@
             const [pinnedPlayers, setPinnedPlayers] = useState([]);
             const [showQuestionDetails, setShowQuestionDetails] = useState(false);
             const [isSendingChat, setIsSendingChat] = useState(false);
+            const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'completed', 'pending'
             const chatMessagesRef = useRef(null);
 
             // Fetch data from Google Sheets
@@ -1318,6 +1367,50 @@
                 return '';
             };
 
+            // Get filtered questions based on current filter
+            const getFilteredQuestions = () => {
+                if (!data?.questions) return [];
+                
+                return data.questions.map((question, idx) => {
+                    if (!question || question === '') return null;
+                    
+                    const hasResult = data.results?.[idx] && data.results[idx] !== '';
+                    
+                    // Apply filter
+                    if (questionFilter === 'completed' && !hasResult) return null;
+                    if (questionFilter === 'pending' && hasResult) return null;
+                    
+                    return {
+                        idx,
+                        question,
+                        result: hasResult ? data.results[idx] : null
+                    };
+                }).filter(q => q !== null);
+            };
+
+            // Get question counts for filter buttons
+            const getQuestionCounts = () => {
+                if (!data?.questions) return { all: 0, completed: 0, pending: 0 };
+                
+                let completed = 0;
+                let pending = 0;
+                let all = 0;
+                
+                data.questions.forEach((question, idx) => {
+                    if (!question || question === '') return;
+                    all++;
+                    
+                    const hasResult = data.results?.[idx] && data.results[idx] !== '';
+                    if (hasResult) {
+                        completed++;
+                    } else {
+                        pending++;
+                    }
+                });
+                
+                return { all, completed, pending };
+            };
+
             if (loading) {
                 return (
                     <div className="container">
@@ -1503,20 +1596,52 @@
                                     <h3 style={{marginBottom: '15px', color: 'var(--seahawks-green)', fontSize: '1.1rem'}}>
                                         📋 All Questions & Results
                                     </h3>
-                                    {data.questions?.map((question, idx) => {
-                                        if (!question || question === '') return null;
-                                        return (
-                                            <div key={idx} className="question-item">
-                                                <span className="question-number">{idx + 1}.</span>
-                                                <span className="question-text">{question}</span>
-                                                <span className={data.results?.[idx] && data.results[idx] !== '' ? 'question-result' : 'question-pending'}>
-                                                    {data.results?.[idx] && data.results[idx] !== '' ? 
-                                                        `✓ ${data.results[idx]}` : 
-                                                        'Pending...'}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
+                                    
+                                    <div className="question-filter-container">
+                                        <button 
+                                            className={`filter-button ${questionFilter === 'all' ? 'active' : ''}`}
+                                            onClick={() => setQuestionFilter('all')}
+                                        >
+                                            All Bets
+                                            <span className="filter-count">{getQuestionCounts().all}</span>
+                                        </button>
+                                        <button 
+                                            className={`filter-button ${questionFilter === 'completed' ? 'active' : ''}`}
+                                            onClick={() => setQuestionFilter('completed')}
+                                        >
+                                            ✓ Completed
+                                            <span className="filter-count">{getQuestionCounts().completed}</span>
+                                        </button>
+                                        <button 
+                                            className={`filter-button ${questionFilter === 'pending' ? 'active' : ''}`}
+                                            onClick={() => setQuestionFilter('pending')}
+                                        >
+                                            ⏳ Outstanding
+                                            <span className="filter-count">{getQuestionCounts().pending}</span>
+                                        </button>
+                                    </div>
+                                    
+                                    {getFilteredQuestions().map((item) => (
+                                        <div key={item.idx} className="question-item">
+                                            <span className="question-number">{item.idx + 1}.</span>
+                                            <span className="question-text">{item.question}</span>
+                                            <span className={item.result ? 'question-result' : 'question-pending'}>
+                                                {item.result ? `✓ ${item.result}` : 'Pending...'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    
+                                    {getFilteredQuestions().length === 0 && (
+                                        <div style={{
+                                            textAlign: 'center',
+                                            padding: '20px',
+                                            color: 'var(--text-secondary)',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            {questionFilter === 'completed' && 'No completed bets yet'}
+                                            {questionFilter === 'pending' && 'No outstanding bets'}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             
