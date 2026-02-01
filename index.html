@@ -262,6 +262,94 @@
             transform: translateY(-2px);
         }
 
+        .question-toggle-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px 0;
+        }
+
+        .question-toggle-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toggle-switch.active {
+            background: var(--seahawks-green);
+            border-color: var(--seahawks-green);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: 32px;
+        }
+
+        .question-details-panel {
+            background: rgba(105, 190, 40, 0.05);
+            border: 1px solid var(--seahawks-green);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .question-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .question-number {
+            font-weight: 700;
+            color: var(--seahawks-green);
+            min-width: 30px;
+        }
+
+        .question-text {
+            flex: 1;
+            color: var(--text-primary);
+        }
+
+        .question-result {
+            color: var(--seahawks-green);
+            font-weight: 600;
+        }
+
+        .question-pending {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
         .header .subtitle {
             font-family: 'Oswald', sans-serif;
             font-size: clamp(1rem, 2.5vw, 1.5rem);
@@ -456,45 +544,61 @@
             position: relative;
             cursor: pointer;
             transition: all 0.3s ease;
+            isolation: isolate;
         }
 
         .prize-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 30px rgba(105, 190, 40, 0.3);
             border-color: var(--seahawks-green);
+            z-index: 10000;
         }
 
         .prize-tooltip {
-            position: absolute;
-            bottom: 110%;
+            position: fixed;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%) scale(0.9);
+            transform: translate(-50%, -50%) scale(0.9);
             background: var(--bg-card);
-            border: 2px solid var(--seahawks-green);
+            border: 3px solid var(--seahawks-green);
             border-radius: 12px;
-            padding: 15px;
-            min-width: 250px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            min-width: 280px;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
             opacity: 0;
             pointer-events: none;
             transition: all 0.3s ease;
-            z-index: 9999;
+            z-index: 999999;
+            backdrop-filter: blur(10px);
         }
 
         .prize-card:hover .prize-tooltip {
             opacity: 1;
-            transform: translateX(-50%) scale(1);
+            transform: translate(-50%, -50%) scale(1);
             pointer-events: auto;
         }
 
-        .prize-tooltip::after {
+        .prize-tooltip::before {
             content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 8px solid transparent;
-            border-top-color: var(--seahawks-green);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .prize-tooltip::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
         }
 
         .prize-tooltip-title {
@@ -749,6 +853,14 @@
             transform: translateY(0);
         }
 
+        .chat-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, rgba(198, 12, 48, 0.5), rgba(0, 34, 68, 0.5));
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
         .loading {
             text-align: center;
             padding: 50px;
@@ -979,14 +1091,14 @@
         // ============================================
         const CONFIG = {
             // Replace with your Google Apps Script Web App URL
-            SHEET_API_URL: 'https://script.google.com/macros/s/AKfycbzDoPq8f4lX7riZIeep98lY6X67MdtDKBSZb1vsON8CBDuAg8AwXXmXM9Jf-UUvApBy/exec',
+            SHEET_API_URL: 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE',
             
             // Refresh interval in milliseconds (5 seconds)
             REFRESH_INTERVAL: 5000,
             
             // Chat configuration
             CHAT_ENABLED: true,
-            CHAT_SHEET_URL: 'https://script.google.com/macros/s/AKfycbzDoPq8f4lX7riZIeep98lY6X67MdtDKBSZb1vsON8CBDuAg8AwXXmXM9Jf-UUvApBy/exec', // Optional: separate chat endpoint
+            CHAT_SHEET_URL: 'YOUR_CHAT_GOOGLE_APPS_SCRIPT_URL_HERE', // Optional: separate chat endpoint
         };
         // ============================================
 
@@ -1002,6 +1114,8 @@
             const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
             const [searchTerm, setSearchTerm] = useState('');
             const [pinnedPlayers, setPinnedPlayers] = useState([]);
+            const [showQuestionDetails, setShowQuestionDetails] = useState(false);
+            const [isSendingChat, setIsSendingChat] = useState(false);
             const chatMessagesRef = useRef(null);
 
             // Fetch data from Google Sheets
@@ -1037,7 +1151,9 @@
 
             // Send chat message
             const sendChatMessage = async () => {
-                if (!chatName.trim() || !chatMessage.trim()) return;
+                if (!chatName.trim() || !chatMessage.trim() || isSendingChat) return;
+                
+                setIsSendingChat(true);
                 
                 try {
                     const chatUrl = CONFIG.CHAT_SHEET_URL || CONFIG.SHEET_API_URL;
@@ -1055,6 +1171,9 @@
                 } catch (err) {
                     console.error('Error sending message:', err);
                     alert('Failed to send message. Please check your connection and make sure the Apps Script is properly deployed.');
+                } finally {
+                    // Re-enable send button after 2 seconds
+                    setTimeout(() => setIsSendingChat(false), 2000);
                 }
             };
 
@@ -1369,6 +1488,38 @@
                         <div className="leaderboard">
                             <h2 style={{marginBottom: '20px', fontFamily: 'Oswald'}}>Full Results by Player</h2>
                             
+                            <div className="question-toggle-container">
+                                <span className="question-toggle-label">Show Question Details</span>
+                                <div 
+                                    className={`toggle-switch ${showQuestionDetails ? 'active' : ''}`}
+                                    onClick={() => setShowQuestionDetails(!showQuestionDetails)}
+                                >
+                                    <div className="toggle-slider"></div>
+                                </div>
+                            </div>
+
+                            {showQuestionDetails && (
+                                <div className="question-details-panel">
+                                    <h3 style={{marginBottom: '15px', color: 'var(--seahawks-green)', fontSize: '1.1rem'}}>
+                                        📋 All Questions & Results
+                                    </h3>
+                                    {data.questions?.map((question, idx) => {
+                                        if (!question || question === '') return null;
+                                        return (
+                                            <div key={idx} className="question-item">
+                                                <span className="question-number">{idx + 1}.</span>
+                                                <span className="question-text">{question}</span>
+                                                <span className={data.results?.[idx] && data.results[idx] !== '' ? 'question-result' : 'question-pending'}>
+                                                    {data.results?.[idx] && data.results[idx] !== '' ? 
+                                                        `✓ ${data.results[idx]}` : 
+                                                        'Pending...'}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            
                             <div className="search-pin-container">
                                 <div className="search-box">
                                     <span className="search-icon">🔍</span>
@@ -1548,10 +1699,14 @@
                                     placeholder="Type your message..."
                                     value={chatMessage}
                                     onChange={(e) => setChatMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                                    onKeyPress={(e) => e.key === 'Enter' && !isSendingChat && sendChatMessage()}
                                 />
-                                <button className="chat-button" onClick={sendChatMessage}>
-                                    Send
+                                <button 
+                                    className="chat-button" 
+                                    onClick={sendChatMessage}
+                                    disabled={isSendingChat}
+                                >
+                                    {isSendingChat ? 'Sending...' : 'Send'}
                                 </button>
                             </div>
                         </div>
