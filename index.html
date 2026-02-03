@@ -1312,7 +1312,7 @@
             
             // Go-live configuration
             GO_LIVE_DATE: new Date('February 9, 2026 16:30:00 EST').getTime(),
-            ADMIN_CODE: 'SUPERBOWL2026',
+            ADMIN_CODE: 'Lancers2826',
         };
         // ============================================
 
@@ -2087,16 +2087,23 @@
                                             >
                                                 <td style={{fontWeight: 600}}>{player.name}</td>
                                                 <td style={{fontWeight: 700, color: 'var(--accent-glow)'}}>{player.points}</td>
-                                                {player.picks?.map((pick, pickIdx) => (
-                                                    <td key={pickIdx} className={
-                                                        pick.status === 'correct' ? 'correct-pick' :
-                                                        pick.status === 'incorrect' ? 'incorrect-pick' :
-                                                        'pending-pick'
-                                                    }>
-                                                        {pick.status === 'correct' ? '✓' :
-                                                         pick.status === 'incorrect' ? '✗' : '−'}
-                                                    </td>
-                                                ))}
+                                                {player.picks?.map((pick, pickIdx) => {
+                                                    // picks are now flat strings; compute status here using results[]
+                                                    const correctAnswer = data.results?.[pickIdx];
+                                                    const status = (correctAnswer !== '' && correctAnswer != null)
+                                                        ? (pick === correctAnswer ? 'correct' : 'incorrect')
+                                                        : 'pending';
+                                                    return (
+                                                        <td key={pickIdx} className={
+                                                            status === 'correct' ? 'correct-pick' :
+                                                            status === 'incorrect' ? 'incorrect-pick' :
+                                                            'pending-pick'
+                                                        }>
+                                                            {status === 'correct' ? '✓' :
+                                                             status === 'incorrect' ? '✗' : '−'}
+                                                        </td>
+                                                    );
+                                                })}
                                             </tr>
                                         ))}
                                     </tbody>
