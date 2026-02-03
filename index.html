@@ -1295,25 +1295,22 @@
         // ============================================
         // CONFIGURATION - UPDATE THESE VALUES
         // ============================================
-        const CONFIG = {
-            // --- JSONBIN READ URLS (handles all dashboard + chat reads) ---
-            DASHBOARD_URL: 'https://api.jsonbin.io/v3/b/69817bcc43b1c97be961464c',
-            CHAT_READ_URL: 'https://api.jsonbin.io/v3/b/69817c4943b1c97be961473f',
-            MASTER_KEY: '$2a$10$YiurugbTLQpar/JI7TGt6e4t2zBaEbvPb6jYsVv7x4s7oKUcm7Equ',
-
-            // --- APPS SCRIPT URL (ONLY used for chat "Send" writes) ---
-            CHAT_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
-            
-            // Refresh interval base in milliseconds (jitter added on top — see fetchData)
-            REFRESH_INTERVAL: 10000,
-            
-            // Chat configuration
-            CHAT_ENABLED: true,
-            
-            // Go-live configuration
-            GO_LIVE_DATE: new Date('February 9, 2026 16:30:00 EST').getTime(),
-            ADMIN_CODE: 'Lancers2826',
-        };
+       const CONFIG = {
+    // UPDATED URLS (Using /latest for jsonbin)
+    DASHBOARD_URL: 'https://api.jsonbin.io/v3/b/69817bcc43b1c97be961464c',
+    CHAT_READ_URL: 'https://api.jsonbin.io/v3/b/69817c4943b1c97be961473f',
+    
+    // NEW MASTER KEY LINE
+    MASTER_KEY: '$2a$10$YiurugbTLQpar/JI7TGt6e4t2zBaEbvPb6jYsVv7x4s7oKUcm7Equ',
+    
+    // YOUR EXISTING APPS SCRIPT URL
+    CHAT_WRITE_URL: 'https://script.google.com/macros/s/AKfycbzL5NlFvB_S8_p0uD7X-rF_2oY-rO2Xm0vTf1vW0vTf1vW0vTf1vW0vTf1vW0vTf1/exec',
+    
+    ADMIN_CODE: 'Lancers2826',
+    GO_LIVE_DATE: new Date('2026-02-09T16:30:00-05:00').getTime(),
+    REFRESH_INTERVAL: 30000,
+    CHAT_ENABLED: true
+};
         // ============================================
 
         function App() {
@@ -1379,44 +1376,44 @@
             };
 
             // Fetch dashboard data from jsonbin (fast, scalable, no execution limits)
-            const fetchData = async () => {
-                try {
-                    // Cache-bust param so browser doesn't serve stale data
-                    const response = await fetch(CONFIG.DASHBOARD_URL + '?t=' + Date.now());
-                    if (!response.ok) throw new Error('Failed to fetch data');
-                    const json = await response.json();
-                    headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
-                    // jsonbin wraps the payload in a "record" field
-                    const result = json.record || json;
-                    setData(result);
-                    setError(null);
-                    setLastUpdate(new Date());
-                    setLoading(false);
-                } catch (err) {
-                    console.error('Error fetching data:', err);
-                    // Don't nuke the UI on a transient failure — keep showing last good data
-                    if (!data) {
-                        setError('Unable to connect to the dashboard. Please check your connection.');
-                    }
-                    setLoading(false);
-                }
-            };
+           const fetchData = async () => {
+    try {
+        const response = await fetch(CONFIG.DASHBOARD_URL + '/latest', {
+            headers: {
+                'X-Master-Key': CONFIG.MASTER_KEY
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const json = await response.json();
+        const result = json.record || json;
+        setData(result);
+        setError(null);
+        setLastUpdate(new Date());
+        setLoading(false);
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Unable to connect to live scores. Will retry shortly...');
+        setLoading(false);
+    }
+};
 
             // Fetch chat from jsonbin
             const fetchChat = async () => {
-                if (!CONFIG.CHAT_ENABLED) return;
-                try {
-                    const response = await fetch(CONFIG.CHAT_READ_URL + '?t=' + Date.now());
-                    if (!response.ok) throw new Error('Failed to fetch chat');
-                    const json = await response.json();
-                    headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
-                    // jsonbin wraps the payload in a "record" field
-                    const result = json.record || json;
-                    setChatMessages(result.messages || []);
-                } catch (err) {
-                    console.error('Error fetching chat:', err);
-                }
-            };
+    try {
+        const response = await fetch(CONFIG.CHAT_READ_URL + '/latest', {
+            headers: {
+                'X-Master-Key': CONFIG.MASTER_KEY
+            }
+        });
+        const json = await response.json();
+        const result = json.record || json;
+        if (result && result.messages) {
+            setChatMessages(result.messages);
+        }
+    } catch (err) {
+        console.error('Error fetching chat:', err);
+    }
+};
 
             // Send chat message — writes still go to Apps Script (low concurrency, one person at a time)
             // After writing, Apps Script pushes updated chat to jsonbin, so we re-fetch after a short delay
