@@ -1296,19 +1296,23 @@
         // CONFIGURATION - UPDATE THESE VALUES
         // ============================================
         const CONFIG = {
-            // Replace with your Google Apps Script Web App URL
-            SHEET_API_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
+            // --- NPOINT READ URLS (handles all dashboard + chat reads) ---
+            // Replace YOUR_DASHBOARD_BIN_ID and YOUR_CHAT_BIN_ID with your actual IDs from npoint.io
+            DASHBOARD_URL: 'https://api.npoint.io/705893275973a9ed331a',
+            CHAT_READ_URL: 'https://api.npoint.io/90d537bfcae960b147c2',
+
+            // --- APPS SCRIPT URL (ONLY used for chat "Send" writes) ---
+            CHAT_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
             
-            // Refresh interval in milliseconds (5 seconds)
-            REFRESH_INTERVAL: 5000,
+            // Refresh interval base in milliseconds (jitter added on top — see fetchData)
+            REFRESH_INTERVAL: 10000,
             
             // Chat configuration
             CHAT_ENABLED: true,
-            CHAT_SHEET_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
             
             // Go-live configuration
-            GO_LIVE_DATE: new Date('February 9, 2026 16:30:00 EST').getTime(), // 4:30 PM EST on Feb 9, 2026
-            ADMIN_CODE: 'Lancers2826', // Change this to your secret code
+            GO_LIVE_DATE: new Date('February 9, 2026 16:30:00 EST').getTime(),
+            ADMIN_CODE: 'SUPERBOWL2026',
         };
         // ============================================
 
@@ -1374,10 +1378,11 @@
                 }
             };
 
-            // Fetch data from Google Sheets
+            // Fetch dashboard data from npoint (fast, scalable, no execution limits)
             const fetchData = async () => {
                 try {
-                    const response = await fetch(CONFIG.SHEET_API_URL);
+                    // Cache-bust param so browser doesn't serve stale data
+                    const response = await fetch(CONFIG.DASHBOARD_URL + '?t=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch data');
                     const result = await response.json();
                     setData(result);
@@ -1386,17 +1391,19 @@
                     setLoading(false);
                 } catch (err) {
                     console.error('Error fetching data:', err);
-                    setError('Unable to connect to the dashboard. Please check your connection.');
+                    // Don't nuke the UI on a transient failure — keep showing last good data
+                    if (!data) {
+                        setError('Unable to connect to the dashboard. Please check your connection.');
+                    }
                     setLoading(false);
                 }
             };
 
-            // Fetch chat messages
+            // Fetch chat from npoint
             const fetchChat = async () => {
                 if (!CONFIG.CHAT_ENABLED) return;
                 try {
-                    const chatUrl = CONFIG.CHAT_SHEET_URL || CONFIG.SHEET_API_URL;
-                    const response = await fetch(`${chatUrl}?type=chat`);
+                    const response = await fetch(CONFIG.CHAT_READ_URL + '?t=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch chat');
                     const result = await response.json();
                     setChatMessages(result.messages || []);
@@ -1405,26 +1412,28 @@
                 }
             };
 
-            // Send chat message
+            // Send chat message — writes still go to Apps Script (low concurrency, one person at a time)
+            // After writing, we poll npoint which will have the new message within seconds
             const sendChatMessage = async () => {
                 if (!chatName.trim() || !chatMessage.trim() || isSendingChat) return;
                 
                 setIsSendingChat(true);
                 
                 try {
-                    const chatUrl = CONFIG.CHAT_SHEET_URL || CONFIG.SHEET_API_URL;
-                    const url = `${chatUrl}?action=addChat&name=${encodeURIComponent(chatName.trim())}&message=${encodeURIComponent(chatMessage.trim())}`;
+                    const url = `${CONFIG.CHAT_WRITE_URL}?action=addChat&name=${encodeURIComponent(chatName.trim())}&message=${encodeURIComponent(chatMessage.trim())}`;
                     
                     const response = await fetch(url);
                     const result = await response.json();
                     
                     if (result.success) {
                         setChatMessage('');
-                        setTimeout(fetchChat, 500);
+                        // The Apps Script pushChatToNpoint runs after the write,
+                        // so a short delay then re-fetch will pick it up
+                        setTimeout(fetchChat, 1500);
                     }
                 } catch (err) {
                     console.error('Error sending message:', err);
-                    alert('Failed to send message. Please check your connection and make sure the Apps Script is properly deployed.');
+                    alert('Failed to send message. Please try again.');
                 } finally {
                     setTimeout(() => setIsSendingChat(false), 2000);
                 }
@@ -1436,14 +1445,19 @@
                 if (CONFIG.CHAT_ENABLED) fetchChat();
             }, []);
 
-            // Auto-refresh data only when live
+            // Auto-refresh with jitter — each user gets a slightly different interval
+            // so 200 people don't all hammer npoint at the exact same second
             useEffect(() => {
                 if (!isLive) return;
                 
+                // Each user gets base interval + 0-5 random seconds of jitter
+                const jitter = Math.random() * 5000;
+                const intervalTime = CONFIG.REFRESH_INTERVAL + jitter;
+
                 const interval = setInterval(() => {
                     fetchData();
                     if (CONFIG.CHAT_ENABLED) fetchChat();
-                }, CONFIG.REFRESH_INTERVAL);
+                }, intervalTime);
 
                 return () => clearInterval(interval);
             }, [isLive]);
