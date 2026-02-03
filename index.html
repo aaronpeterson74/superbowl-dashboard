@@ -1299,6 +1299,7 @@
             // --- JSONBIN READ URLS (handles all dashboard + chat reads) ---
             DASHBOARD_URL: 'https://api.jsonbin.io/v3/b/69817bcc43b1c97be961464c',
             CHAT_READ_URL: 'https://api.jsonbin.io/v3/b/69817c4943b1c97be961473f',
+            MASTER_KEY: '$2a$10$YiurugbTLQpar/JI7TGt6e4t2zBaEbvPb6jYsVv7x4s7oKUcm7Equ',
 
             // --- APPS SCRIPT URL (ONLY used for chat "Send" writes) ---
             CHAT_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
@@ -1384,6 +1385,7 @@
                     const response = await fetch(CONFIG.DASHBOARD_URL + '?t=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch data');
                     const json = await response.json();
+                    headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
                     // jsonbin wraps the payload in a "record" field
                     const result = json.record || json;
                     setData(result);
@@ -1407,6 +1409,7 @@
                     const response = await fetch(CONFIG.CHAT_READ_URL + '?t=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch chat');
                     const json = await response.json();
+                    headers: { 'X-Master-Key': CONFIG.MASTER_KEY }
                     // jsonbin wraps the payload in a "record" field
                     const result = json.record || json;
                     setChatMessages(result.messages || []);
