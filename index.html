@@ -1296,10 +1296,9 @@
         // CONFIGURATION - UPDATE THESE VALUES
         // ============================================
         const CONFIG = {
-            // --- NPOINT READ URLS (handles all dashboard + chat reads) ---
-            // Replace YOUR_DASHBOARD_BIN_ID and YOUR_CHAT_BIN_ID with your actual IDs from npoint.io
-            DASHBOARD_URL: 'https://api.npoint.io/705893275973a9ed331a',
-            CHAT_READ_URL: 'https://api.npoint.io/90d537bfcae960b147c2',
+            // --- JSONBIN READ URLS (handles all dashboard + chat reads) ---
+            DASHBOARD_URL: 'https://api.jsonbin.io/v3/b/69817bcc43b1c97be961464c',
+            CHAT_READ_URL: 'https://api.jsonbin.io/v3/b/69817c4943b1c97be961473f',
 
             // --- APPS SCRIPT URL (ONLY used for chat "Send" writes) ---
             CHAT_WRITE_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
@@ -1378,13 +1377,15 @@
                 }
             };
 
-            // Fetch dashboard data from npoint (fast, scalable, no execution limits)
+            // Fetch dashboard data from jsonbin (fast, scalable, no execution limits)
             const fetchData = async () => {
                 try {
                     // Cache-bust param so browser doesn't serve stale data
                     const response = await fetch(CONFIG.DASHBOARD_URL + '?t=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch data');
-                    const result = await response.json();
+                    const json = await response.json();
+                    // jsonbin wraps the payload in a "record" field
+                    const result = json.record || json;
                     setData(result);
                     setError(null);
                     setLastUpdate(new Date());
@@ -1399,13 +1400,15 @@
                 }
             };
 
-            // Fetch chat from npoint
+            // Fetch chat from jsonbin
             const fetchChat = async () => {
                 if (!CONFIG.CHAT_ENABLED) return;
                 try {
                     const response = await fetch(CONFIG.CHAT_READ_URL + '?t=' + Date.now());
                     if (!response.ok) throw new Error('Failed to fetch chat');
-                    const result = await response.json();
+                    const json = await response.json();
+                    // jsonbin wraps the payload in a "record" field
+                    const result = json.record || json;
                     setChatMessages(result.messages || []);
                 } catch (err) {
                     console.error('Error fetching chat:', err);
@@ -1413,7 +1416,7 @@
             };
 
             // Send chat message — writes still go to Apps Script (low concurrency, one person at a time)
-            // After writing, we poll npoint which will have the new message within seconds
+            // After writing, Apps Script pushes updated chat to jsonbin, so we re-fetch after a short delay
             const sendChatMessage = async () => {
                 if (!chatName.trim() || !chatMessage.trim() || isSendingChat) return;
                 
@@ -1427,7 +1430,7 @@
                     
                     if (result.success) {
                         setChatMessage('');
-                        // The Apps Script pushChatToNpoint runs after the write,
+                        // The Apps Script pushChatToJsonbin runs after the write,
                         // so a short delay then re-fetch will pick it up
                         setTimeout(fetchChat, 1500);
                     }
@@ -1446,7 +1449,7 @@
             }, []);
 
             // Auto-refresh with jitter — each user gets a slightly different interval
-            // so 200 people don't all hammer npoint at the exact same second
+            // so 200 people don't all hammer jsonbin at the exact same second
             useEffect(() => {
                 if (!isLive) return;
                 
