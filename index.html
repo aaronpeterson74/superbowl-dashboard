@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 McDraper Super Bowl LX Prop Bets</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏈</text></svg>">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -71,22 +72,6 @@
             position: relative;
             overflow: visible;
             z-index: 1;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 217, 255, 0.1) 0%, transparent 70%);
-            animation: pulse 8s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.2); opacity: 0.6; }
         }
 
         .header h1 {
@@ -638,17 +623,6 @@
             z-index: -1;
         }
 
-        .prize-tooltip::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: -1;
-        }
-
         .prize-tooltip-title {
             font-family: 'Oswald', sans-serif;
             font-size: 0.9rem;
@@ -1086,6 +1060,181 @@
             color: var(--text-secondary);
         }
 
+        /* Countdown Mode Styles */
+        .countdown-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+
+        .countdown-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--patriots-red), var(--seahawks-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .countdown-timer {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+            max-width: 600px;
+        }
+
+        .countdown-unit {
+            background: var(--bg-card);
+            border: 2px solid var(--seahawks-green);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(105, 190, 40, 0.2);
+        }
+
+        .countdown-number {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3rem;
+            color: var(--seahawks-green);
+            text-shadow: 0 0 20px rgba(105, 190, 40, 0.5);
+        }
+
+        .countdown-label {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .countdown-message {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .countdown-live-message {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3rem;
+            color: var(--seahawks-green);
+            text-shadow: 0 0 30px rgba(105, 190, 40, 0.5);
+            animation: pulse-text 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-text {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .admin-login-link {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0.05;
+            transition: opacity 0.3s ease;
+            z-index: 10000;
+            font-size: 20px;
+        }
+
+        .admin-login-link:hover {
+            opacity: 0.3;
+        }
+
+        .admin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+        }
+
+        .admin-modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--seahawks-green);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .admin-modal-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+            color: var(--seahawks-green);
+            margin-bottom: 20px;
+        }
+
+        .admin-code-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        .admin-code-input:focus {
+            outline: none;
+            border-color: var(--seahawks-green);
+        }
+
+        .admin-button {
+            padding: 12px 25px;
+            background: var(--seahawks-green);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .admin-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(105, 190, 40, 0.4);
+        }
+
+        .admin-button.cancel {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 15px;
+            background: var(--seahawks-green);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(105, 190, 40, 0.4);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -1124,6 +1273,15 @@
             .tab {
                 width: 100%;
             }
+
+            .countdown-timer {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .countdown-number {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
@@ -1146,7 +1304,11 @@
             
             // Chat configuration
             CHAT_ENABLED: true,
-            CHAT_SHEET_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec', // Optional: separate chat endpoint
+            CHAT_SHEET_URL: 'https://script.google.com/macros/s/AKfycbwC5OaHUHbPhsxjJ0F94fhGYoG-ZjGWWUOyxKmke1uFNp5NQg2Aa03UkpaCwhEQNXc/exec',
+            
+            // Go-live configuration
+            GO_LIVE_DATE: new Date('February 9, 2026 16:30:00 EST').getTime(), // 4:30 PM EST on Feb 9, 2026
+            ADMIN_CODE: 'Lancers2826', // Change this to your secret code
         };
         // ============================================
 
@@ -1164,8 +1326,53 @@
             const [pinnedPlayers, setPinnedPlayers] = useState([]);
             const [showQuestionDetails, setShowQuestionDetails] = useState(false);
             const [isSendingChat, setIsSendingChat] = useState(false);
-            const [questionFilter, setQuestionFilter] = useState('all'); // 'all', 'completed', 'pending'
+            const [questionFilter, setQuestionFilter] = useState('all');
+            const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+            const [isLive, setIsLive] = useState(false);
+            const [isAdminMode, setIsAdminMode] = useState(false);
+            const [showAdminModal, setShowAdminModal] = useState(false);
+            const [adminCodeInput, setAdminCodeInput] = useState('');
             const chatMessagesRef = useRef(null);
+
+            // Check if site should be live
+            useEffect(() => {
+                const checkLiveStatus = () => {
+                    const now = new Date().getTime();
+                    const timeUntilLive = CONFIG.GO_LIVE_DATE - now;
+                    
+                    if (timeUntilLive <= 0 || isAdminMode) {
+                        setIsLive(true);
+                        return;
+                    }
+                    
+                    setIsLive(false);
+                    
+                    // Calculate countdown
+                    const days = Math.floor(timeUntilLive / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeUntilLive % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeUntilLive % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeUntilLive % (1000 * 60)) / 1000);
+                    
+                    setCountdown({ days, hours, minutes, seconds });
+                };
+                
+                checkLiveStatus();
+                const interval = setInterval(checkLiveStatus, 1000);
+                
+                return () => clearInterval(interval);
+            }, [isAdminMode]);
+
+            // Admin code verification
+            const handleAdminLogin = () => {
+                if (adminCodeInput === CONFIG.ADMIN_CODE) {
+                    setIsAdminMode(true);
+                    setShowAdminModal(false);
+                    setAdminCodeInput('');
+                } else {
+                    alert('Incorrect admin code');
+                    setAdminCodeInput('');
+                }
+            };
 
             // Fetch data from Google Sheets
             const fetchData = async () => {
@@ -1206,7 +1413,6 @@
                 
                 try {
                     const chatUrl = CONFIG.CHAT_SHEET_URL || CONFIG.SHEET_API_URL;
-                    // Use GET with parameters for better Apps Script compatibility
                     const url = `${chatUrl}?action=addChat&name=${encodeURIComponent(chatName.trim())}&message=${encodeURIComponent(chatMessage.trim())}`;
                     
                     const response = await fetch(url);
@@ -1214,14 +1420,12 @@
                     
                     if (result.success) {
                         setChatMessage('');
-                        // Fetch updated messages immediately
                         setTimeout(fetchChat, 500);
                     }
                 } catch (err) {
                     console.error('Error sending message:', err);
                     alert('Failed to send message. Please check your connection and make sure the Apps Script is properly deployed.');
                 } finally {
-                    // Re-enable send button after 2 seconds
                     setTimeout(() => setIsSendingChat(false), 2000);
                 }
             };
@@ -1232,15 +1436,17 @@
                 if (CONFIG.CHAT_ENABLED) fetchChat();
             }, []);
 
-            // Auto-refresh data
+            // Auto-refresh data only when live
             useEffect(() => {
+                if (!isLive) return;
+                
                 const interval = setInterval(() => {
                     fetchData();
                     if (CONFIG.CHAT_ENABLED) fetchChat();
                 }, CONFIG.REFRESH_INTERVAL);
 
                 return () => clearInterval(interval);
-            }, []);
+            }, [isLive]);
 
             // Auto-scroll chat to bottom
             useEffect(() => {
@@ -1288,7 +1494,7 @@
                 if (!pinnedPlayers.includes(playerName)) {
                     setPinnedPlayers([...pinnedPlayers, playerName]);
                 }
-                setSearchTerm(''); // Clear search after pinning
+                setSearchTerm('');
             };
 
             const unpinPlayer = (playerName) => {
@@ -1305,7 +1511,6 @@
                 
                 let sorted = [...data.fullResults];
                 
-                // Apply sorting
                 if (sortConfig.key === 'name') {
                     sorted.sort((a, b) => {
                         const comparison = a.name.localeCompare(b.name);
@@ -1318,11 +1523,9 @@
                     });
                 }
                 
-                // Separate pinned and unpinned
                 const pinned = sorted.filter(p => pinnedPlayers.includes(p.name));
                 const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.name));
                 
-                // Pinned players always at top, then rest
                 return [...pinned, ...unpinned];
             };
 
@@ -1332,30 +1535,25 @@
                 const term = searchTerm.toLowerCase();
                 return data.fullResults.filter(p => 
                     p.name.toLowerCase().includes(term)
-                ).slice(0, 5); // Show top 5 matches
+                ).slice(0, 5);
             };
 
             // Determine trend bar color based on option text
             const getTrendBarClass = (optionName) => {
                 const name = optionName.toLowerCase();
                 
-                // Check for team names
                 if (name.includes('seahawk') || name.includes('seattle')) {
                     return 'seahawks';
                 }
                 if (name.includes('patriot') || name.includes('new england')) {
                     return 'patriots';
                 }
-                
-                // Check for over/under
                 if (name.includes('over')) {
                     return 'over';
                 }
                 if (name.includes('under')) {
                     return 'under';
                 }
-                
-                // Check for yes/no
                 if (name === 'yes') {
                     return 'yes';
                 }
@@ -1363,7 +1561,6 @@
                     return 'no';
                 }
                 
-                // Default gradient
                 return '';
             };
 
@@ -1376,7 +1573,6 @@
                     
                     const hasResult = data.results?.[idx] && data.results[idx] !== '';
                     
-                    // Apply filter
                     if (questionFilter === 'completed' && !hasResult) return null;
                     if (questionFilter === 'pending' && hasResult) return null;
                     
@@ -1411,6 +1607,7 @@
                 return { all, completed, pending };
             };
 
+            // Loading state
             if (loading) {
                 return (
                     <div className="container">
@@ -1419,6 +1616,7 @@
                 );
             }
 
+            // Error state
             if (error) {
                 return (
                     <div className="container">
@@ -1433,8 +1631,110 @@
                 );
             }
 
+            // Countdown mode (before go-live)
+            if (!isLive) {
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <h1>
+                                <img 
+                                    src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/ne.png" 
+                                    alt="Patriots Logo" 
+                                    className="team-logo patriots"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                                <span className="header-title-text">
+                                    <span className="word-1">2026 </span>
+                                    <span className="word-2">McDraper </span>
+                                    <span className="word-3">Super Bowl </span>
+                                    <span className="word-4">LX </span>
+                                    <span className="word-5">Prop Bets</span>
+                                </span>
+                                <img 
+                                    src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/sea.png" 
+                                    alt="Seahawks Logo" 
+                                    className="team-logo seahawks"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                            </h1>
+                        </div>
+
+                        <div className="countdown-container">
+                            <div className="countdown-title">Dashboard Goes Live In:</div>
+                            
+                            <div className="countdown-timer">
+                                <div className="countdown-unit">
+                                    <div className="countdown-number">{countdown.days}</div>
+                                    <div className="countdown-label">Days</div>
+                                </div>
+                                <div className="countdown-unit">
+                                    <div className="countdown-number">{countdown.hours}</div>
+                                    <div className="countdown-label">Hours</div>
+                                </div>
+                                <div className="countdown-unit">
+                                    <div className="countdown-number">{countdown.minutes}</div>
+                                    <div className="countdown-label">Minutes</div>
+                                </div>
+                                <div className="countdown-unit">
+                                    <div className="countdown-number">{countdown.seconds}</div>
+                                    <div className="countdown-label">Seconds</div>
+                                </div>
+                            </div>
+
+                            <div className="countdown-message">
+                                🏈 The dashboard will go live at 4:30 PM EST on Sunday, February 9th, 2026<br/>
+                                Get your picks in before then!
+                            </div>
+
+                            <div className="stats-bar" style={{marginTop: '40px', maxWidth: '400px'}}>
+                                <div className="stat-card">
+                                    <div className="stat-label">💰 Total Prize Pool</div>
+                                    <div className="stat-value prize-value">${data.stats?.prizePool || 0}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button className="admin-login-link" onClick={() => setShowAdminModal(true)}>
+                            🔑
+                        </button>
+
+                        {showAdminModal && (
+                            <div className="admin-modal">
+                                <div className="admin-modal-content">
+                                    <div className="admin-modal-title">Admin Access</div>
+                                    <input
+                                        type="password"
+                                        className="admin-code-input"
+                                        placeholder="Enter admin code"
+                                        value={adminCodeInput}
+                                        onChange={(e) => setAdminCodeInput(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                                    />
+                                    <button className="admin-button" onClick={handleAdminLogin}>
+                                        Login
+                                    </button>
+                                    <button className="admin-button cancel" onClick={() => {
+                                        setShowAdminModal(false);
+                                        setAdminCodeInput('');
+                                    }}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            // Full dashboard (when live or in admin mode)
             return (
                 <div className="container">
+                    {isAdminMode && (
+                        <div className="admin-indicator">
+                            🔓 Admin Mode
+                        </div>
+                    )}
+
                     <div className="header">
                         <h1>
                             <img 
@@ -1734,7 +2034,6 @@
                                                 Points
                                             </th>
                                             {data.questions?.map((question, idx) => {
-                                                // Skip empty questions
                                                 if (!question || question === '') return null;
                                                 
                                                 return (
@@ -1840,6 +2139,37 @@
                     {lastUpdate && (
                         <div className="update-indicator">
                             Last updated: {lastUpdate.toLocaleTimeString()}
+                        </div>
+                    )}
+
+                    {!isAdminMode && (
+                        <button className="admin-login-link" onClick={() => setShowAdminModal(true)}>
+                            🔑
+                        </button>
+                    )}
+
+                    {showAdminModal && (
+                        <div className="admin-modal">
+                            <div className="admin-modal-content">
+                                <div className="admin-modal-title">Admin Access</div>
+                                <input
+                                    type="password"
+                                    className="admin-code-input"
+                                    placeholder="Enter admin code"
+                                    value={adminCodeInput}
+                                    onChange={(e) => setAdminCodeInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                                />
+                                <button className="admin-button" onClick={handleAdminLogin}>
+                                    Login
+                                </button>
+                                <button className="admin-button cancel" onClick={() => {
+                                    setShowAdminModal(false);
+                                    setAdminCodeInput('');
+                                }}>
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
