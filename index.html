@@ -1284,6 +1284,13 @@
             }
         }
         
+        /* Penultimate (Second to Last) Styling */
+        .rank-penultimate { 
+            color: #ff69b4; /* Hot Pink */
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.6);
+            font-weight: bold;
+        }
+        
 /* Tour System Styles */
         .tour-replay-button {
             position: fixed;
@@ -1923,6 +1930,19 @@
                 
                 return { all, completed, pending };
             };
+
+            // Determine if a player is in penultimate place
+const isPenultimateRank = (rank) => {
+    if (!data?.leaderboard || data.leaderboard.length < 2) return false;
+    
+    // Find the maximum rank (last place)
+    const maxRank = Math.max(...data.leaderboard.map(p => p.rank));
+    
+    // Penultimate is second-to-last (maxRank - 1)
+    const penultimateRank = maxRank - 1;
+    
+    return rank === penultimateRank;
+};
             
             // Tour spotlight component
             const TourSpotlight = () => {
@@ -2267,14 +2287,16 @@
                                 <div>Points</div>
                                 <div className="percentage">Accuracy</div>
                             </div>
-                            {data.leaderboard?.map((player, idx) => (
-                                <div key={idx} className="leaderboard-row">
-                                    <div className={`rank rank-${player.rank}`}>{player.rank}</div>
-                                    <div className="player-name">{player.name}</div>
-                                    <div className="points">{player.points}</div>
-                                    <div className="percentage">{player.percentage}</div>
-                                </div>
-                            ))}
+{data.leaderboard?.map((player, idx) => (
+    <div key={idx} className="leaderboard-row">
+        <div className={`rank ${player.rank <= 3 ? `rank-${player.rank}` : ''} ${isPenultimateRank(player.rank) ? 'rank-penultimate' : ''}`}>
+            {player.rank}
+        </div>
+        <div className="player-name">{player.name}</div>
+        <div className="points">{player.points}</div>
+        <div className="percentage">{player.percentage}</div>
+    </div>
+))}
                         </div>
                     )}
 
