@@ -1284,7 +1284,7 @@
             }
         }
         
-        /* Tour System Styles */
+/* Tour System Styles */
         .tour-replay-button {
             position: fixed;
             bottom: 60px;
@@ -1317,20 +1317,21 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: transparent; /* KEY FIX: Transparent so it's not double-dark */
             z-index: 999998;
-            pointer-events: none;
+            pointer-events: auto;
         }
 
         .tour-spotlight {
             position: fixed;
             border: 3px solid var(--seahawks-green);
             border-radius: 12px;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85),
+            /* KEY FIX: Lighter shadow (0.75) and smooth transition */
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 
                         0 0 30px rgba(105, 190, 40, 0.5);
             pointer-events: none;
             z-index: 999999;
-            transition: all 0.4s ease;
+            transition: all 0.3s ease-out; 
         }
 
         .tour-tooltip {
@@ -1343,6 +1344,7 @@
             z-index: 1000000;
             pointer-events: auto;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            transition: top 0.3s ease-out, left 0.3s ease-out;
         }
 
         .tour-tooltip-header {
@@ -1749,6 +1751,7 @@
                 const step = tourSteps[tourStep];
                 if (!step.target) return;
                 
+                // KEY FIX: Small timeout allows the Tab to switch before we calculate position
                 setTimeout(() => {
                     let element;
                     if (step.targetIndex !== undefined) {
@@ -1759,13 +1762,15 @@
                     }
                     
                     if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // KEY FIX: behavior 'auto' stops the drifting/lagging effect
+                        element.scrollIntoView({ behavior: 'auto', block: 'center' });
                         tourTargetRef.current = element;
+                        
+                        // Force a recalculation of the spotlight position
+                        window.dispatchEvent(new Event('resize'));
                     }
-                }, 100);
+                }, 150); 
             }, [tourStep, tourActive]);
-
-
 
             // Sorting function for full results table
             const handleSort = (key) => {
