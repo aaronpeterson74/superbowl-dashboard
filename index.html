@@ -1533,7 +1533,7 @@
     CHAT_ENABLED: true
 };
 
-// Decompress picks from Apps Script
+// Decompress pick values
 function decompressText(val) {
     if (!val) return val;
     const v = String(val);
@@ -1563,7 +1563,57 @@ function decompressText(val) {
     if (v === "Org") return "Orange";
     if (v === "Clr") return "Clear";
     
-    return v; // Return as-is if no match
+    return v;
+}
+
+// Decompress question text
+function decompressQuestion(q) {
+    if (!q) return q;
+    return q
+        .replace(/^Team:/, "Which team will")
+        .replace(/^#/, "How many")
+        .replace(/NE/g, "New England Patriots")
+        .replace(/SEA/g, "Seattle Seahawks")
+        .replace(/\bTD\b/g, "touchdown")
+        .replace(/\bFG\b/g, "field goal");
+}
+
+// Calculate trends from fullResults
+function calculateTrends(data) {
+    if (!data?.fullResults || !data?.questions) return [];
+    
+    const trends = [];
+    
+    data.questions.forEach((question, qIdx) => {
+        if (!question || question === '') return;
+        
+        const pickCounts = {};
+        let totalPicks = 0;
+        
+        data.fullResults.forEach(player => {
+            const pick = player.k?.[qIdx];
+            if (pick && pick !== '') {
+                pickCounts[pick] = (pickCounts[pick] || 0) + 1;
+                totalPicks++;
+            }
+        });
+        
+        const options = Object.entries(pickCounts)
+            .map(([name, count]) => ({
+                name: decompressText(name),
+                percent: totalPicks > 0 ? Math.round((count / totalPicks) * 100) : 0
+            }))
+            .sort((a, b) => b.percent - a.percent);
+        
+        if (options.length > 0) {
+            trends.push({
+                question: decompressQuestion(question),
+                options
+            });
+        }
+    });
+    
+    return trends;
 }
         // ============================================
 
@@ -1904,13 +1954,13 @@ useEffect(() => {
                 const sorted = [...data.fullResults];
                 
                 if (sortConfig.key === 'name') {
-                    sorted.sort((a, b) => {
-                        const comparison = a.name.localeCompare(b.name);
+    sorted.sort((a, b) => {
+        const comparison = a.n.localeCompare(b.n);
                         return sortConfig.direction === 'asc' ? comparison : -comparison;
                     });
                 } else if (sortConfig.key === 'points') {
-                    sorted.sort((a, b) => {
-                        const comparison = (b.points || 0) - (a.points || 0);
+    sorted.sort((a, b) => {
+        const comparison = (b.p || 0) - (a.p || 0);
                         return sortConfig.direction === 'asc' ? -comparison : comparison;
                     });
                 }
@@ -1957,8 +2007,8 @@ useEffect(() => {
                     });
                 }
                 
-                const pinned = sorted.filter(p => pinnedPlayers.includes(p.name));
-                const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.name));
+                const pinned = sorted.filter(p => pinnedPlayers.includes(p.n));
+const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.n));
                 
                 return [...pinned, ...unpinned];
             };
@@ -1968,8 +2018,8 @@ useEffect(() => {
                 if (!searchTerm || !data?.fullResults) return [];
                 const term = searchTerm.toLowerCase();
                 return data.fullResults.filter(p => 
-                    p.name.toLowerCase().includes(term)
-                ).slice(0, 5);
+    p.n.toLowerCase().includes(term)
+).slice(0, 5);
             };
 
             // Determine trend bar color based on option text
@@ -2397,22 +2447,29 @@ const isPenultimateRank = (rank) => {
                                 <div>Points</div>
                                 <div className="percentage">Accuracy</div>
                             </div>
-{data.leaderboard?.map((player, idx) => (
-    <div key={idx} className="leaderboard-row">
-        <div className={`rank ${player.rank <= 3 ? `rank-${player.rank}` : ''} ${isPenultimateRank(player.rank) ? 'rank-penultimate' : ''}`}>
-            {player.rank}
+{data.leaderboard?.map((player, idx) => {
+    // Calculate percentage on frontend (no longer in data)
+    const totalBets = data.stats?.totalBets || 25;
+    const percentage = totalBets > 0 
+        ? `${Math.round((player.p / totalBets) * 100)}%` 
+        : '0%';
+    
+    return (
+        <div key={idx} className="leaderboard-row">
+            <div className={`rank ${player.rank <= 3 ? `rank-${player.rank}` : ''} ${isPenultimateRank(player.rank) ? 'rank-penultimate' : ''}`}>
+                {player.rank}
+            </div>
+            <div className="player-name">{player.n}</div>
+            <div className="points">{player.p}</div>
+            <div className="percentage">{percentage}</div>
         </div>
-        <div className="player-name">{player.name}</div>
-        <div className="points">{player.points}</div>
-        <div className="percentage">{player.percentage}</div>
-    </div>
-))}
-                        </div>
+    );
+})}                        </div>
                     )}
 
                     {activeTab === 'trends' && (
-                        <div className="trends-grid">
-                            {data.trends?.map((trend, idx) => (
+    <div className="trends-grid">
+        {calculateTrends(data).map((trend, idx) => (
                                 <div key={idx} className="trend-card">
                                     <div className="trend-question">{trend.question}</div>
                                     {trend.options.map((option, optIdx) => (
@@ -2526,10 +2583,10 @@ const isPenultimateRank = (rank) => {
                                             maxHeight: '200px',
                                             overflowY: 'auto'
                                         }}>
-                                            {getSearchResults().map((player, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    onClick={() => pinPlayer(player.name)}
+                                           {getSearchResults().map((player, idx) => (
+    <div
+        key={idx}
+        onClick={() => pinPlayer(player.n)}
                                                     style={{
                                                         padding: '10px 15px',
                                                         cursor: 'pointer',
@@ -2539,11 +2596,11 @@ const isPenultimateRank = (rank) => {
                                                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(105, 190, 40, 0.1)'}
                                                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                                                 >
-                                                    <strong>{player.name}</strong> - {player.points} points
-                                                    {!pinnedPlayers.includes(player.name) && (
+                                                   <strong>{player.n}</strong> - {player.p} points
+{!pinnedPlayers.includes(player.n) && (
                                                         <span style={{float: 'right', color: 'var(--seahawks-green)'}}>📌 Click to pin</span>
                                                     )}
-                                                    {pinnedPlayers.includes(player.name) && (
+                                                   {pinnedPlayers.includes(player.n) && (
                                                         <span style={{float: 'right', color: 'var(--text-secondary)'}}>✓ Pinned</span>
                                                     )}
                                                 </div>
@@ -2603,8 +2660,8 @@ const isPenultimateRank = (rank) => {
                                                             {idx + 1}
                                                             <span className="question-tooltip">
                                                                 <div className="question-tooltip-title">
-                                                                    {question}
-                                                                </div>
+    {decompressQuestion(question)}
+</div>
                                                                 {data.results && data.results[idx] && data.results[idx] !== '' ? (
                                                                     <div className="question-tooltip-result">
                                                                         <div className="question-tooltip-result-label">Result:</div>
@@ -2624,19 +2681,20 @@ const isPenultimateRank = (rank) => {
                                     </thead>
                                     <tbody>
                                         {getDisplayedResults().map((player, idx) => (
-                                            <tr 
-                                                key={idx}
-                                                className={pinnedPlayers.includes(player.name) ? 'pinned-row' : ''}
-                                            >
-                                                <td style={{fontWeight: 600}}>{player.name}</td>
-                                                <td style={{fontWeight: 700, color: 'var(--accent-glow)'}}>{player.points}</td>
-    {player.picks?.map((pick, pickIdx) => {
-    const correctAnswer = data.results?.[pickIdx];
+    <tr 
+        key={idx}
+        className={pinnedPlayers.includes(player.n) ? 'pinned-row' : ''}
+    >
+        <td style={{fontWeight: 600}}>{player.n}</td>
+        <td style={{fontWeight: 700, color: 'var(--accent-glow)'}}>{player.p}</td>
+        {player.k?.map((pick, pickIdx) => {    
+        
+        const correctAnswer = data.results?.[pickIdx];
     const status = (correctAnswer !== '' && correctAnswer != null)
         ? (pick === correctAnswer ? 'correct' : 'incorrect')
         : 'pending';
     
-    const cellId = `${player.name}-${pickIdx}`;
+    const cellId = `${player.n}-${pickIdx}`;
     const isActive = activePickCell === cellId;
     const isFirstRow = idx === 0; // Check if this is the top player
     
@@ -2658,7 +2716,7 @@ const isPenultimateRank = (rank) => {
             
             <span className="pick-tooltip">
                 <div className="pick-tooltip-label">Pick:</div>
-                <div className={`pick-tooltip-value ${status}`}>
+               <div className={`pick-tooltip-value ${status}`}>
     {decompressText(pick) || 'No pick'}
 </div>
             </span>
