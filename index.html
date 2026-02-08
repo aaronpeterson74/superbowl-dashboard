@@ -1532,6 +1532,39 @@
     REFRESH_INTERVAL: 10000,
     CHAT_ENABLED: true
 };
+
+// Decompress picks from Apps Script
+function decompressText(val) {
+    if (!val) return val;
+    const v = String(val);
+    
+    // Teams
+    if (v === "NE") return "New England Patriots";
+    if (v === "SEA") return "Seattle Seahawks";
+    
+    // Common Props
+    if (v === "TO") return "Turnover";
+    if (v === "TD") return "Touchdown";
+    if (v === "FG") return "Field Goal";
+    if (v === "SAF") return "Safety";
+    if (v === "Y") return "Yes";
+    if (v === "N") return "No";
+    if (v === "Ov") return "Over";
+    if (v === "Un") return "Under";
+    if (v === "H") return "Heads";
+    if (v === "T") return "Tails";
+    if (v === "Odd") return "Odd";
+    if (v === "Ev") return "Even";
+    
+    // Gatorade Colors
+    if (v === "Blu") return "Blue";
+    if (v === "Pur") return "Purple";
+    if (v === "Yel") return "Yellow";
+    if (v === "Org") return "Orange";
+    if (v === "Clr") return "Clear";
+    
+    return v; // Return as-is if no match
+}
         // ============================================
 
         function App() {
@@ -2313,7 +2346,7 @@ const isPenultimateRank = (rank) => {
                                         <div className="prize-tooltip-title">{prize.place} Winners</div>
                                         {prize.playerList.map((player, pIdx) => (
                                             <div key={pIdx} className="prize-tooltip-player">
-                                                <span className="prize-tooltip-player-name">{player.name}</span>
+                                                <span className="prize-tooltip-player-name">{player}</span>
                                                 <span className="prize-tooltip-player-amount">${player.share}</span>
                                             </div>
                                         ))}
@@ -2626,8 +2659,8 @@ const isPenultimateRank = (rank) => {
             <span className="pick-tooltip">
                 <div className="pick-tooltip-label">Pick:</div>
                 <div className={`pick-tooltip-value ${status}`}>
-                    {pick || 'No pick'}
-                </div>
+    {decompressText(pick) || 'No pick'}
+</div>
             </span>
         </td>
     );
