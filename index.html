@@ -1439,6 +1439,59 @@
                 font-size: 1.1rem;
             }
         }
+        /* Pick Cell Tooltip */
+.pick-cell {
+    position: relative;
+    cursor: pointer;
+}
+
+.pick-tooltip {
+    position: fixed;
+    background: var(--bg-card);
+    border: 2px solid var(--seahawks-green);
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-width: 120px;
+    max-width: 250px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 9999;
+    white-space: nowrap;
+}
+
+.pick-cell:hover .pick-tooltip,
+.pick-cell.active .pick-tooltip {
+    opacity: 1;
+    transform: translateY(-5px);
+}
+
+.pick-tooltip-label {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.pick-tooltip-value {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pick-tooltip-value.correct {
+    color: #4ade80;
+}
+
+.pick-tooltip-value.incorrect {
+    color: #f87171;
+}
+
+.pick-tooltip-value.pending {
+    color: var(--text-secondary); /* Grey for pending */
+}
 
     </style>
 </head>
@@ -1491,6 +1544,7 @@
             const [showAdminModal, setShowAdminModal] = useState(false);
             const [adminCodeInput, setAdminCodeInput] = useState('');
             const chatMessagesRef = useRef(null);
+            const [activePickCell, setActivePickCell] = useState(null);
             
             const [tourActive, setTourActive] = useState(false);
             const [tourStep, setTourStep] = useState(0);
@@ -1779,6 +1833,18 @@
                 }, 150); 
             }, [tourStep, tourActive]);
 
+            // Close pick tooltip when clicking outside
+useEffect(() => {
+    const handleClickOutside = (e) => {
+        if (!e.target.closest('.pick-cell')) {
+            setActivePickCell(null);
+        }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+}, []);
+            
             // Sorting function for full results table
             const handleSort = (key) => {
                 let direction = 'asc';
@@ -2127,7 +2193,7 @@ const isPenultimateRank = (rank) => {
                             </div>
 
                             <div className="countdown-message">
-                                🏈 The dashboard will go live at 4:30 PM EST on Sunday, February 9th, 2026<br/>
+                                🏈 The dashboard will go live at 4:30 PM EST on Sunday, February 8th, 2026<br/>
                                 Get your picks in before then!
                             </div>
 
@@ -2521,23 +2587,45 @@ const isPenultimateRank = (rank) => {
                                                 <td style={{fontWeight: 600}}>{player.name}</td>
                                                 <td style={{fontWeight: 700, color: 'var(--accent-glow)'}}>{player.points}</td>
                                                 {player.picks?.map((pick, pickIdx) => {
-                                                    // picks are now flat strings; compute status here using results[]
-                                                    const correctAnswer = data.results?.[pickIdx];
-                                                    const status = (correctAnswer !== '' && correctAnswer != null)
-                                                        ? (pick === correctAnswer ? 'correct' : 'incorrect')
-                                                        : 'pending';
-                                                    return (
-                                                        <td key={pickIdx} className={
-                                                            status === 'correct' ? 'correct-pick' :
-                                                            status === 'incorrect' ? 'incorrect-pick' :
-                                                            'pending-pick'
-                                                        }>
-                                                            {status === 'correct' ? '✓' :
-                                                             status === 'incorrect' ? '✗' : '−'}
-                                                        </td>
-                                                    );
-                                                })}
-                                            </tr>
+    const correctAnswer = data.results?.[pickIdx];
+    const status = (correctAnswer !== '' && correctAnswer != null)
+        ? (pick === correctAnswer ? 'correct' : 'incorrect')
+        : 'pending';
+    
+    const cellId = `${player.name}-${pickIdx}`;
+    const isActive = activePickCell === cellId;
+    
+    return (
+        <td 
+            key={pickIdx} 
+            className={`pick-cell ${
+                status === 'correct' ? 'correct-pick' :
+                status === 'incorrect' ? 'incorrect-pick' :
+                'pending-pick'
+            } ${isActive ? 'active' : ''}`}
+            onClick={(e) => {
+                e.stopPropagation();
+                setActivePickCell(isActive ? null : cellId);
+            }}
+        >
+            {status === 'correct' ? '✓' :
+             status === 'incorrect' ? '✗' : '−'}
+            
+            <span className="pick-tooltip" style={{
+                top: 'auto',
+                bottom: '100%',
+                left: '50%',
+                transform: 'translateX(-50%) translateY(-5px)',
+                marginBottom: '8px'
+            }}>
+                <div className="pick-tooltip-label">Pick:</div>
+                <div className={`pick-tooltip-value ${status}`}>
+                    {pick || 'No pick'}
+                </div>
+            </span>
+        </td>
+    );
+})}                                            </tr>
                                         ))}
                                     </tbody>
                                 </table>
