@@ -2391,15 +2391,12 @@ const isPenultimateRank = (rank) => {
                                 <div className="prize-amount">${prize.amount}</div>
                                 <div className="prize-winners">{prize.winners}</div>
                                 
-                                {prize.playerList && prize.playerList.length > 0 && (
-                                    <div className="prize-tooltip">
-                                        <div className="prize-tooltip-title">{prize.place} Winners</div>
-                                        {prize.playerList.map((player, pIdx) => (
-                                            <div key={pIdx} className="prize-tooltip-player">
-                                                <span className="prize-tooltip-player-name">{player}</span>
-                                                <span className="prize-tooltip-player-amount">${player.share}</span>
-                                            </div>
-                                        ))}
+                               {prize.playerList && (
+    <div className="winner-names">
+        {/* React can now safely render this because it's just a string of text */}
+        {prize.playerList}
+    </div>
+)}
                                         <div className="prize-tooltip-total">
                                             <span className="prize-tooltip-total-label">Total Pool:</span>
                                             <span className="prize-tooltip-total-amount">${prize.amount}</span>
