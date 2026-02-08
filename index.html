@@ -1439,14 +1439,18 @@
                 font-size: 1.1rem;
             }
         }
-        /* Pick Cell Tooltip */
+      /* Pick Cell Tooltip */
 .pick-cell {
     position: relative;
     cursor: pointer;
 }
 
 .pick-tooltip {
-    position: fixed;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
     background: var(--bg-card);
     border: 2px solid var(--seahawks-green);
     border-radius: 8px;
@@ -1456,15 +1460,14 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
     opacity: 0;
     pointer-events: none;
-    transition: all 0.2s ease;
-    z-index: 9999;
+    transition: opacity 0.2s ease;
+    z-index: 10000;
     white-space: nowrap;
 }
 
 .pick-cell:hover .pick-tooltip,
 .pick-cell.active .pick-tooltip {
     opacity: 1;
-    transform: translateY(-5px);
 }
 
 .pick-tooltip-label {
@@ -2611,13 +2614,7 @@ const isPenultimateRank = (rank) => {
             {status === 'correct' ? '✓' :
              status === 'incorrect' ? '✗' : '−'}
             
-            <span className="pick-tooltip" style={{
-                top: 'auto',
-                bottom: '100%',
-                left: '50%',
-                transform: 'translateX(-50%) translateY(-5px)',
-                marginBottom: '8px'
-            }}>
+            <span className="pick-tooltip">
                 <div className="pick-tooltip-label">Pick:</div>
                 <div className={`pick-tooltip-value ${status}`}>
                     {pick || 'No pick'}
