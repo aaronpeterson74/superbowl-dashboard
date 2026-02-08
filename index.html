@@ -2387,14 +2387,16 @@ const isPenultimateRank = (rank) => {
                     <div className="prize-section">
                         {data.prizes?.map((prize, idx) => (
                             <div key={idx} className="prize-card">
-                                <div className="prize-place">{prize.place}</div>
-                                <div className="prize-amount">${prize.amount}</div>
-                                <div className="prize-winners">{prize.winners}</div>
-                                
-                               {prize.playerList && (
-    <div className="winner-names">
-        {/* React can now safely render this because it's just a string of text */}
-        {prize.playerList}
+        <div className="prize-place">{prize.place}</div>
+        <div className="prize-amount">${prize.amount.toLocaleString()}</div>
+        <div className="prize-winners">{prize.winners}</div>
+        
+        {/* Simplified: This logic now expects a single string of names */}
+        {prize.playerList && prize.playerList.length > 0 && (
+            <div className="winner-names">
+                {prize.playerList}
+            </div>
+        )}
     </div>
 )}
                                         <div className="prize-tooltip-total">
