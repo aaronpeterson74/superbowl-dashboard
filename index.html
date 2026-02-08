@@ -1464,7 +1464,15 @@
     z-index: 10000;
     white-space: nowrap;
 }
-
+        
+/* Flip tooltip downward for first row */
+.pick-cell.first-row .pick-tooltip {
+    bottom: auto;
+    top: 100%;
+    margin-bottom: 0;
+    margin-top: 8px;
+}
+        
 .pick-cell:hover .pick-tooltip,
 .pick-cell.active .pick-tooltip {
     opacity: 1;
@@ -2589,7 +2597,7 @@ const isPenultimateRank = (rank) => {
                                             >
                                                 <td style={{fontWeight: 600}}>{player.name}</td>
                                                 <td style={{fontWeight: 700, color: 'var(--accent-glow)'}}>{player.points}</td>
-                                                {player.picks?.map((pick, pickIdx) => {
+    {player.picks?.map((pick, pickIdx) => {
     const correctAnswer = data.results?.[pickIdx];
     const status = (correctAnswer !== '' && correctAnswer != null)
         ? (pick === correctAnswer ? 'correct' : 'incorrect')
@@ -2597,6 +2605,7 @@ const isPenultimateRank = (rank) => {
     
     const cellId = `${player.name}-${pickIdx}`;
     const isActive = activePickCell === cellId;
+    const isFirstRow = idx === 0; // Check if this is the top player
     
     return (
         <td 
@@ -2605,7 +2614,7 @@ const isPenultimateRank = (rank) => {
                 status === 'correct' ? 'correct-pick' :
                 status === 'incorrect' ? 'incorrect-pick' :
                 'pending-pick'
-            } ${isActive ? 'active' : ''}`}
+            } ${isActive ? 'active' : ''} ${isFirstRow ? 'first-row' : ''}`}
             onClick={(e) => {
                 e.stopPropagation();
                 setActivePickCell(isActive ? null : cellId);
@@ -2622,7 +2631,7 @@ const isPenultimateRank = (rank) => {
             </span>
         </td>
     );
-})}                                            </tr>
+})}                                           </tr>
                                         ))}
                                     </tbody>
                                 </table>
