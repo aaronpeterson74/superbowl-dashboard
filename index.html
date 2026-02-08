@@ -1504,6 +1504,137 @@
     color: var(--text-secondary); /* Grey for pending */
 }
 
+/* Pagination Controls */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0 15px;
+        }
+
+        .pagination-button {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background: rgba(105, 190, 40, 0.2);
+            border-color: var(--seahawks-green);
+            transform: translateY(-2px);
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pagination-button.active {
+            background: var(--seahawks-green);
+            border-color: var(--seahawks-green);
+            color: white;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: 5px;
+        }
+
+        .page-number {
+            min-width: 40px;
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .page-number:hover {
+            background: rgba(105, 190, 40, 0.2);
+            border-color: var(--seahawks-green);
+        }
+
+        .page-number.active {
+            background: var(--seahawks-green);
+            border-color: var(--seahawks-green);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .pagination-container {
+                padding: 15px 10px;
+            }// Get sorted and filtered results with pinned players at top and pagination
+const getDisplayedResults = () => {
+    if (!data?.fullResults) return [];
+    
+    let sorted = [...data.fullResults];
+    
+    // Apply sorting
+    if (sortConfig.key === 'name') {
+        sorted.sort((a, b) => {
+            const comparison = a.n.localeCompare(b.n);
+            return sortConfig.direction === 'asc' ? comparison : -comparison;
+        });
+    } else if (sortConfig.key === 'points') {
+        sorted.sort((a, b) => {
+            const comparison = (b.p || 0) - (a.p || 0);
+            return sortConfig.direction === 'asc' ? -comparison : comparison;
+        });
+    }
+    
+    // Separate pinned and unpinned
+    const pinned = sorted.filter(p => pinnedPlayers.includes(p.n));
+    const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.n));
+    
+    // Paginate ONLY the unpinned players
+    const startIdx = (currentPage - 1) * playersPerPage;
+    const endIdx = startIdx + playersPerPage;
+    const paginatedUnpinned = unpinned.slice(startIdx, endIdx);
+    
+    // Pinned always at top, then paginated unpinned
+    return [...pinned, ...paginatedUnpinned];
+};
+
+            
+            .pagination-info {
+                font-size: 0.8rem;
+                margin: 0 5px;
+                order: 3;
+                width: 100%;
+                text-align: center;
+                margin-top: 10px;
+            }
+            
+            .pagination-button {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .page-numbers {
+                display: none; /* Hide page numbers on mobile, keep prev/next */
+            }
+        }        
     </style>
 </head>
 <body>
@@ -1639,10 +1770,12 @@ function calculateTrends(data) {
             const [adminCodeInput, setAdminCodeInput] = useState('');
             const chatMessagesRef = useRef(null);
             const [activePickCell, setActivePickCell] = useState(null);
-            
+            const [currentPage, setCurrentPage] = useState(1);
+const [playersPerPage] = useState(25); // 25 players per page - adjust if needed
             const [tourActive, setTourActive] = useState(false);
             const [tourStep, setTourStep] = useState(0);
             const tourTargetRef = useRef(null);
+            
 
             // Check if site should be live
             useEffect(() => {
@@ -1941,12 +2074,13 @@ useEffect(() => {
             
             // Sorting function for full results table
             const handleSort = (key) => {
-                let direction = 'asc';
-                if (sortConfig.key === key && sortConfig.direction === 'asc') {
-                    direction = 'desc';
-                }
-                setSortConfig({ key, direction });
-            };
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+        direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1); // Reset to first page when sorting
+};
 
             const getSortedResults = () => {
                 if (!data?.fullResults) return [];
@@ -1975,43 +2109,61 @@ useEffect(() => {
 
             // Pin/unpin player functions
             const pinPlayer = (playerName) => {
-                if (!pinnedPlayers.includes(playerName)) {
-                    setPinnedPlayers([...pinnedPlayers, playerName]);
-                }
-                setSearchTerm('');
-            };
+    if (!pinnedPlayers.includes(playerName)) {
+        setPinnedPlayers([...pinnedPlayers, playerName]);
+    }
+    setSearchTerm('');
+    setCurrentPage(1); // Reset to first page when pinning
+};
 
             const unpinPlayer = (playerName) => {
-                setPinnedPlayers(pinnedPlayers.filter(name => name !== playerName));
-            };
+    setPinnedPlayers(pinnedPlayers.filter(name => name !== playerName));
+    setCurrentPage(1); // Reset to first page when unpinning
+};
 
-            const clearAllPins = () => {
-                setPinnedPlayers([]);
-            };
+           const clearAllPins = () => {
+    setPinnedPlayers([]);
+    setCurrentPage(1); // Reset to first page when clearing pins
+};
 
-            // Get sorted and filtered results with pinned players at top
-            const getDisplayedResults = () => {
-                if (!data?.fullResults) return [];
-                
-                let sorted = [...data.fullResults];
-                
-                if (sortConfig.key === 'name') {
-                    sorted.sort((a, b) => {
-                        const comparison = a.name.localeCompare(b.name);
-                        return sortConfig.direction === 'asc' ? comparison : -comparison;
-                    });
-                } else if (sortConfig.key === 'points') {
-                    sorted.sort((a, b) => {
-                        const comparison = (b.points || 0) - (a.points || 0);
-                        return sortConfig.direction === 'asc' ? -comparison : comparison;
-                    });
-                }
-                
-                const pinned = sorted.filter(p => pinnedPlayers.includes(p.n));
-const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.n));
-                
-                return [...pinned, ...unpinned];
-            };
+          // Get sorted and filtered results with pinned players at top and pagination
+const getDisplayedResults = () => {
+    if (!data?.fullResults) return [];
+    
+    let sorted = [...data.fullResults];
+    
+    // Apply sorting
+    if (sortConfig.key === 'name') {
+        sorted.sort((a, b) => {
+            const comparison = a.n.localeCompare(b.n);
+            return sortConfig.direction === 'asc' ? comparison : -comparison;
+        });
+    } else if (sortConfig.key === 'points') {
+        sorted.sort((a, b) => {
+            const comparison = (b.p || 0) - (a.p || 0);
+            return sortConfig.direction === 'asc' ? -comparison : comparison;
+        });
+    }
+    
+    // Separate pinned and unpinned
+    const pinned = sorted.filter(p => pinnedPlayers.includes(p.n));
+    const unpinned = sorted.filter(p => !pinnedPlayers.includes(p.n));
+    
+    // Paginate ONLY the unpinned players
+    const startIdx = (currentPage - 1) * playersPerPage;
+    const endIdx = startIdx + playersPerPage;
+    const paginatedUnpinned = unpinned.slice(startIdx, endIdx);
+    
+    // Pinned always at top, then paginated unpinned
+    return [...pinned, ...paginatedUnpinned];
+};
+
+            // Helper to get total pages for pagination
+const getTotalPages = () => {
+    if (!data?.fullResults) return 1;
+    const unpinnedCount = data.fullResults.filter(p => !pinnedPlayers.includes(p.n)).length;
+    return Math.ceil(unpinnedCount / playersPerPage);
+};
 
             // Search for player and highlight/suggest pinning
             const getSearchResults = () => {
@@ -2562,13 +2714,16 @@ const isPenultimateRank = (rank) => {
                             <div className="search-pin-container">
                                 <div className="search-box">
                                     <span className="search-icon">🔍</span>
-                                    <input
-                                        type="text"
-                                        className="search-input"
-                                        placeholder="Search for a player to pin..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
+                                   <input
+    type="text"
+    className="search-input"
+    placeholder="Search for a player to pin..."
+    value={searchTerm}
+    onChange={(e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1); // Reset to first page when searching
+    }}
+/>
                                     {searchTerm && getSearchResults().length > 0 && (
                                         <div style={{
                                             position: 'absolute',
@@ -2727,6 +2882,62 @@ const isPenultimateRank = (rank) => {
                                     </tbody>
                                 </table>
                             </div>
+                             </table>
+                            </div>
+                            
+                            {/* Pagination Controls */}
+                            <div className="pagination-container">
+                                <button 
+                                    className="pagination-button"
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    ← Previous
+                                </button>
+                                
+                                {/* Page Numbers (desktop only) */}
+                                <div className="page-numbers">
+                                    {Array.from({ length: Math.min(5, getTotalPages()) }, (_, i) => {
+                                        // Show pages around current page
+                                        let pageNum;
+                                        if (getTotalPages() <= 5) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage <= 3) {
+                                            pageNum = i + 1;
+                                        } else if (currentPage >= getTotalPages() - 2) {
+                                            pageNum = getTotalPages() - 4 + i;
+                                        } else {
+                                            pageNum = currentPage - 2 + i;
+                                        }
+                                        
+                                        return (
+                                            <div
+                                                key={pageNum}
+                                                className={`page-number ${currentPage === pageNum ? 'active' : ''}`}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                
+                                <div className="pagination-info">
+                                    Page {currentPage} of {getTotalPages()}
+                                    {pinnedPlayers.length > 0 && ` (+${pinnedPlayers.length} pinned)`}
+                                </div>
+                                
+                                <button 
+                                    className="pagination-button"
+                                    onClick={() => setCurrentPage(prev => Math.min(getTotalPages(), prev + 1))}
+                                    disabled={currentPage === getTotalPages()}
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                         </div>
                     )}
 
