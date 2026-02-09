@@ -2330,6 +2330,9 @@ const isPenultimateRank = (rank) => {
                     </div>
                 );
             }
+            
+            // Calculate search results once to avoid repeated calls in render and messy JSX logic
+            const currentSearchResults = searchTerm ? getSearchResults() : [];
 
             // Full dashboard (when live or in admin mode)
             return (
@@ -2387,18 +2390,19 @@ const isPenultimateRank = (rank) => {
                     <div className="prize-section">
                         {data.prizes?.map((prize, idx) => (
                             <div key={idx} className="prize-card">
-        <div className="prize-place">{prize.place}</div>
-        <div className="prize-amount">${prize.amount.toLocaleString()}</div>
-        <div className="prize-winners">{prize.winners}</div>
-        
-        {/* Simplified: This logic now expects a single string of names */}
-        {prize.playerList && prize.playerList.length > 0 && (
-            <div className="winner-names">
-                {prize.playerList}
-            </div>
-        )}
-    </div>
-)}
+                                <div className="prize-place">{prize.place}</div>
+                                <div className="prize-amount">${prize.amount}</div>
+                                <div className="prize-winners">{prize.winners}</div>
+                                
+                                {prize.playerList && Array.isArray(prize.playerList) && prize.playerList.length > 0 && (
+                                    <div className="prize-tooltip">
+                                        <div className="prize-tooltip-title">{prize.place} Winners</div>
+                                        {prize.playerList.map((player, pIdx) => (
+                                            <div key={pIdx} className="prize-tooltip-player">
+                                                <span className="prize-tooltip-player-name">{player.n || player.name || player}</span>
+                                                <span className="prize-tooltip-player-amount">${player.share || 0}</span>
+                                            </div>
+                                        ))}
                                         <div className="prize-tooltip-total">
                                             <span className="prize-tooltip-total-label">Total Pool:</span>
                                             <span className="prize-tooltip-total-amount">${prize.amount}</span>
@@ -2568,7 +2572,7 @@ const isPenultimateRank = (rank) => {
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    {searchTerm && getSearchResults().length > 0 && (
+                                    {searchTerm && currentSearchResults.length > 0 && (
                                         <div style={{
                                             position: 'absolute',
                                             top: '100%',
@@ -2582,26 +2586,26 @@ const isPenultimateRank = (rank) => {
                                             maxHeight: '200px',
                                             overflowY: 'auto'
                                         }}>
-                                           {getSearchResults().map((player, idx) => (
-    <div
-        key={idx}
-        onClick={() => pinPlayer(player.n)}
+                                           {currentSearchResults.map((player, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    onClick={() => pinPlayer(player.n)}
                                                     style={{
                                                         padding: '10px 15px',
                                                         cursor: 'pointer',
-                                                        borderBottom: idx < getSearchResults().length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                                        borderBottom: idx < currentSearchResults.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                                                         transition: 'background 0.2s ease'
                                                     }}
                                                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(105, 190, 40, 0.1)'}
                                                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                                                 >
                                                    <strong>{player.n}</strong> - {player.p} points
-{!pinnedPlayers.includes(player.n) && (
+                                                   {!pinnedPlayers.includes(player.n) && (
                                                         <span style={{float: 'right', color: 'var(--seahawks-green)'}}>📌 Click to pin</span>
-                                                    )}
+                                                   )}
                                                    {pinnedPlayers.includes(player.n) && (
                                                         <span style={{float: 'right', color: 'var(--text-secondary)'}}>✓ Pinned</span>
-                                                    )}
+                                                   )}
                                                 </div>
                                             ))}
                                         </div>
@@ -2830,3 +2834,5 @@ const isPenultimateRank = (rank) => {
     </script>
 </body>
 </html>
+index3.html
+Displaying index3.html.
